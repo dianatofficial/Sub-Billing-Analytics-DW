@@ -21,6 +21,9 @@ setup-dw:
 run-analytics:
 	python scripts/run_analytics.py
 
+dashboard:
+	streamlit run app.py
+
 benchmark:
 	python benchmarks/benchmark_partitioning.py
 
