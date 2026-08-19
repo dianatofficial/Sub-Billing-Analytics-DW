@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  dw-postgres:
+    image: postgres:16-alpine
+    container_name: saas_billing_dw_pg
+    environment:
+      POSTGRES_DB: saas_dw
+      POSTGRES_USER: dw_admin
+      POSTGRES_PASSWORD: dw_secure_password_2025
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ../schema:/docker-entrypoint-initdb.d:ro
+    command: >
+      postgres
+        -c shared_buffers=512MB
+        -c work_mem=64MB
+        -c maintenance_work_mem=128MB
+        -c effective_cache_size=1536MB
+        -c max_worker_processes=4
+        -c max_parallel_workers_per_gather=2
+        -c max_parallel_workers=4
+        -c random_page_cost=1.1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dw_admin -d saas_dw"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: saas_billing_dw_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: dianatofficial9@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: admin_password_2025
+    ports:
+      - "5050:80"
+    depends_on:
+      dw-postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+    driver: local
